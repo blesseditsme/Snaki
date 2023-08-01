@@ -71,19 +71,11 @@ public class Panel extends JPanel implements ActionListener {
             y[i] = y[i - 1];
         }
 
-        switch(direction) {
-            case 'U':
-                y[0] = y[0] - UNIT_SIZE;
-                break;
-            case 'D':
-                y[0] = y[0] + UNIT_SIZE;
-                break;
-            case 'L':
-                x[0] = x[0] - UNIT_SIZE;
-                break;
-            case 'R':
-                x[0] = x[0] + UNIT_SIZE;
-                break;
+        switch (direction) {
+            case 'U' -> y[0] = y[0] - UNIT_SIZE;
+            case 'D' -> y[0] = y[0] + UNIT_SIZE;
+            case 'L' -> x[0] = x[0] - UNIT_SIZE;
+            case 'R' -> x[0] = x[0] + UNIT_SIZE;
         }
     }
     public void newApple() {
@@ -155,23 +147,23 @@ public class Panel extends JPanel implements ActionListener {
     public class MyKeyAdapter extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-            switch(e.getKeyCode()) {
-                case KeyEvent.VK_LEFT:
-                    if(direction != 'R')
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_LEFT -> {
+                    if (direction != 'R')
                         direction = 'L';
-                    break;
-                case KeyEvent.VK_RIGHT:
-                    if(direction != 'L')
+                }
+                case KeyEvent.VK_RIGHT -> {
+                    if (direction != 'L')
                         direction = 'R';
-                    break;
-                case KeyEvent.VK_UP:
-                    if(direction != 'D')
+                }
+                case KeyEvent.VK_UP -> {
+                    if (direction != 'D')
                         direction = 'U';
-                    break;
-                case KeyEvent.VK_DOWN:
-                    if(direction != 'U')
+                }
+                case KeyEvent.VK_DOWN -> {
+                    if (direction != 'U')
                         direction = 'D';
-                    break;
+                }
             }
         }
 
