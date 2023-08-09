@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Random;
+import java.util.prefs.Preferences;
 
 public class Panel extends JPanel implements ActionListener {
 
@@ -16,11 +17,11 @@ public class Panel extends JPanel implements ActionListener {
     int applesEaten = 0;
     int appleX;
     int appleY;
+    int highestScore = 0;
     char direction = 'R';
     boolean running = false;
     Timer timer;
     Random random;
-    JButton restartButton = new JButton("Restart");
 
     Panel() {
         random = new Random();
@@ -29,26 +30,27 @@ public class Panel extends JPanel implements ActionListener {
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter());
         startGame();
+        highestScore = loadHighestScore();
     }
 
     public void startGame() {
-        newApple();
         running = true;
-//        x[0] = 4;
-//        y[0] = 0;
         timer = new Timer(DELAY, this);
         timer.start();
+        newApple();
     }
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         draw(g);
     }
+
     public void draw(Graphics g) {
         if (running) {
             g.setColor(Color.RED);
             g.fillOval(appleX,appleY,UNIT_SIZE,UNIT_SIZE);
 
-            for(int i = 0; i < bodyParts; i++) {
+            for(int i = 0; i < bodyParts; i++)
                 if(i == 0) {
                     g.setColor(Color.GREEN);
                     g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
@@ -56,15 +58,22 @@ public class Panel extends JPanel implements ActionListener {
                     g.setColor(new Color(45, 180, 0));
                     g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
                 }
-            }
+
+            // Displaying score
             g.setColor(Color.BLACK);
             g.setFont(new Font("Consolas", Font.PLAIN, 40));
             FontMetrics metrics = getFontMetrics(g.getFont());
             g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten))/2, g.getFont().getSize());
-        }  else {
+
+            // Displaying the highest score
+            g.setColor(Color.BLACK);
+            g.setFont(new Font("Consolas", Font.PLAIN, 20));
+            FontMetrics metrics2 = getFontMetrics(g.getFont());
+            g.drawString("Highest Score: " + highestScore, (SCREEN_WIDTH - metrics2.stringWidth("Highest Score: " + highestScore)) - 5, g.getFont().getSize() + 15);
+        }  else
             gameOver(g);
-        }
     }
+
     public void move() {
         for(int i = bodyParts; i > 0; --i) {
             x[i] = x[i - 1];
@@ -78,10 +87,12 @@ public class Panel extends JPanel implements ActionListener {
             case 'R' -> x[0] = x[0] + UNIT_SIZE;
         }
     }
+
     public void newApple() {
         appleX = random.nextInt((SCREEN_WIDTH/UNIT_SIZE)) * UNIT_SIZE;
         appleY = random.nextInt((SCREEN_HEIGHT/UNIT_SIZE)) * UNIT_SIZE;
     }
+
     public void checkApple() {
         if((x[0] == appleX) && (y[0] == appleY)) {
             bodyParts++;
@@ -89,49 +100,81 @@ public class Panel extends JPanel implements ActionListener {
             newApple();
         }
     }
+
     public void checkCollisions() {
-        //checks if head collides with body
+        // Checks if head collides with body
         for(int i = bodyParts; i > 0; --i)
             if((x[0] == x[i]) && (y[0] == y[i])) {
                 running = false;
                 break;
             }
 
-        //checks if head touches edges
-        if(x[0] < 0) {
+        // Checks if head touches edges
+        if(x[0] < 0)
             running = false;
-        }
-        if(x[0] > SCREEN_WIDTH) {
+        if(x[0] > SCREEN_WIDTH)
             running = false;
-        }
-        if(y[0] < 0) {
+        if(y[0] < 0)
             running = false;
-        }
-        if(y[0] > SCREEN_HEIGHT) {
+        if(y[0] > SCREEN_HEIGHT)
             running = false;
-        }
 
         if(!running)
             timer.stop();
     }
+    // Save highest score
+
+    private void saveHighestScore(int score) {
+        Preferences prefs = Preferences.userNodeForPackage(Panel.class);
+        prefs.putInt("highestScore", score);
+    }
+
+    // Load the highest score
+    private int loadHighestScore() {
+        Preferences prefs = Preferences.userNodeForPackage(Panel.class);
+        return prefs.getInt("highestScore", 0);
+    }
+
     public void gameOver(Graphics g) {
-        //Showing the score after defeat
+        // Showing the score after defeat
         g.setColor(Color.BLACK);
         g.setFont(new Font("Consolas", Font.PLAIN, 40));
         FontMetrics metrics1 = getFontMetrics(g.getFont());
         g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics1.stringWidth("Score: " + applesEaten))/2, g.getFont().getSize());
-        //Game Over text
+
+        // Game Over text
         g.setColor(Color.BLACK);
         g.setFont(new Font("Consolas", Font.BOLD, 75));
         FontMetrics metrics2 = getFontMetrics(g.getFont());
-        g.drawString("Game Over", (SCREEN_WIDTH - metrics2.stringWidth("Game Over"))/2, SCREEN_HEIGHT/2);
+        g.drawString("Game Over", (SCREEN_WIDTH - metrics2.stringWidth("Game Over"))/2, SCREEN_HEIGHT/2 - 50);
 
-        this.add(restartButton);
-        restartButton.setBounds((SCREEN_WIDTH - "Restart".length())/2, SCREEN_HEIGHT - 280, 50,30);
-        restartButton.setFocusable(true);
-        restartButton.setBorder(BorderFactory.createEtchedBorder());
-        restartButton.setBackground(null);
-        restartButton.addActionListener(this);
+        // Restart instruction
+        g.setFont(new Font("Consolas", Font.PLAIN, 20));
+        FontMetrics metrics3 = getFontMetrics(g.getFont());
+        g.drawString("Press 'R' to restart", (SCREEN_WIDTH - metrics3.stringWidth("Press 'R' to restart")) / 2, SCREEN_HEIGHT / 2 + 50);
+
+        // Display previous and new highest scores
+        int previousHighestScore = highestScore;
+        if (applesEaten > highestScore) {
+            highestScore = applesEaten;
+            saveHighestScore(highestScore);
+        }
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Consolas", Font.PLAIN, 20));
+        g.drawString("Highest Score: " + previousHighestScore, (SCREEN_WIDTH - metrics3.stringWidth("Highest Score: " + previousHighestScore)) / 2, SCREEN_HEIGHT / 2 + 100);
+        if(applesEaten > highestScore)
+            g.drawString("New Highest Score: " + applesEaten, (SCREEN_WIDTH - metrics3.stringWidth("New Highest Score: " + highestScore)) / 2, SCREEN_HEIGHT / 2 + 130);
+    }
+    public void restartGame() {
+        bodyParts = 4;
+        applesEaten = 0;
+        direction = 'R';
+        for (int i = 0; i < bodyParts; i++) {
+            x[i] = 0;
+            y[i] = 0;
+        }
+        running = true;
+        startGame();
     }
 
     @Override
@@ -164,8 +207,11 @@ public class Panel extends JPanel implements ActionListener {
                     if (direction != 'U')
                         direction = 'D';
                 }
+                case KeyEvent.VK_R -> {
+                    if(!running)
+                        restartGame();
+                }
             }
         }
-
     }
 }
