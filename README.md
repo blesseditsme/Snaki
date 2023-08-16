@@ -1,3 +1,4 @@
+# SwingSnakeGame
 Snake Game
 This is a simple Snake Game implemented in Java using Swing. The game allows you to control a snake that grows in length as it consumes apples on the game board. The objective is to eat as many apples as possible without colliding with the walls or the snake's own body. The game provides a feature to shake the screen when the snake collides, adding an engaging visual effect.
 
